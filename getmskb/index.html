@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Windows 提权辅助 | 在线安全工具</title>
+	<meta charset="utf-8">
+</head>
+<body>
+<center>
+	<h4>systeminfo</h4><br>
+	<textarea style="width: 950px; height: 341px;" id="content"></textarea><br><br>
+	<input type="submit" id="search" value="查询" onclick="getMSKB();"><br>
+	<div id="result"></div>
+</center>
+
+<script src="./mskblist.js"></script>
+<script>
+function getMSKB(){
+	var tasklist = document.getElementById('content').value.toLowerCase();
+	var result = document.getElementById('result');
+	var htmlContent = "";
+	for(i=0; i<Object.keys(fixedList).length; i++){
+		var fixedId = fixedList[i][1];
+		if(tasklist.indexOf("kb") != -1 && tasklist.indexOf(fixedId.toLowerCase()) == -1){
+			htmlContent += "微软编号: " + fixedList[i][0] + " <=> 补丁编号: " + fixedId + " <=> 描述: " + fixedList[i][2] + " <=> 影响系统: " + fixedList[i][3] + "<br>";
+		}
+	}
+	result.innerHTML = htmlContent;
+}
+
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+[submodule "reverseshell"]
+	path = reverseshell
+	url = https://github.com/0dayCTF/reverse-shell-generator.git
+[submodule "googlehacking"]
+	path = googlehacking
+	url = https://github.com/r00tSe7en/GoogleHackingTool.git
+[submodule "xssee"]
+	path = xssee
+	url = https://github.com/Monyer/xssee.git
