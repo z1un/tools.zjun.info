@@ -16,7 +16,7 @@
 
 [avList - 杀软进程对应杀软名称](https://github.com/gh0stkey/avList)
 
-[get_AV](https://github.com/r00tSe7en/get_AV)
+[get_AV - Windows杀软在线对比辅助](https://github.com/r00tSe7en/get_AV)
 
 [CyberChef - 用于加密、编码、压缩和数据分析的网站](https://github.com/gchq/CyberChef)
 
