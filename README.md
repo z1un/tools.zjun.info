@@ -1,8 +1,8 @@
 # 网络安全工具
 
-均来自下列开源项目部分进行更改，并在该项目部署。
+Idea 来源于 [SecSummers](https://twitter.com/SecSummers)，在线工具均来自下列开源项目部分进行更改，并在该项目部署。若有侵权等，请联系删除。
 
-## 原始项目地址
+## 原工具 Github 项目地址
 
 [Hack-Tools - Web 渗透的一体化红队工具](https://github.com/LasCC/Hack-Tools)
 
@@ -16,7 +16,7 @@
 
 [avList - 杀软进程对应杀软名称](https://github.com/gh0stkey/avList)
 
-[get_AV - Windows杀软在线对比辅助](https://github.com/r00tSe7en/get_AV)
+[get_AV - Windows 杀软在线对比辅助](https://github.com/r00tSe7en/get_AV)
 
 [CyberChef - 用于加密、编码、压缩和数据分析的网站](https://github.com/gchq/CyberChef)
 
