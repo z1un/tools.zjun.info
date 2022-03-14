@@ -1,0 +1,557 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>XSSEE | 在线安全工具</title>
+<link rel="stylesheet" style="text/css" href="static/960.css" />
+<script type="text/javascript" src="static/jquery.js"></script>
+<script type="text/javascript" src="static/evilapi.js"></script>
+<script src="static/tab_for_textarea.js" type="text/javascript">//自动缩进</script>
+<!--Code Mirror-->
+<script src="static/codemirror/lib/codemirror-compressed.js"></script>
+<link rel="stylesheet" href="static/codemirror/lib/codemirror.css">
+<link rel="stylesheet" href="static/codemirror/theme/default.css">
+<link rel="stylesheet" href="static/codemirror/theme/night.css">
+<!--End Code Mirror-->
+<style type="text/css">
+body,*{
+	font-size:14px;
+}
+#txt, #console, #common_op,
+#code_format, #btn_common_op,
+#unicode{
+	width:99%;
+}
+#txt{
+	height:400px;
+}
+#console{
+	height:100px
+}
+#code_jinzhi,#code_digit{
+	width:49%
+}
+#btn_encode,#btn_decode{
+	width:49%;
+	font-size:20px;
+}
+#btn_common_op{
+	font-size:20px;
+}
+/*
+
+*/
+#shade_div{
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	display:none;
+	z-index:10;
+	zoom:1;
+	background:white;
+}
+#shade_close{
+	font-size:24px;
+	font-weight:bolder;
+	color:red;
+	height:50px;
+}
+/****************************************************
+****Code Mirror
+*****************************************************/
+.CodeMirror-scroll{
+	height:400px;
+	border:1px solid #ccc;
+}
+.activeline {
+	background: #f0fcff !important;
+}
+.fullscreen {
+	display: block;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	z-index: 100;
+	margin: 0;
+	padding: 0;
+	border: 0px solid #BBBBBB;
+	zoom:1;
+	background:#fff;
+}
+/*
+tabs
+*/
+#tabs .current{
+	background:red;
+}
+#tabs .empty{
+	background:white;
+}
+#tabs .filled{
+	background:green;
+}
+#tabs .btn_tab{
+	width:35px;
+}
+
+
+#search_txt,#replace_txt{
+	width:100px;
+}
+</style>
+<script type="text/javascript">
+$(function(){
+	/////////////////////////////////////////////////
+	////编辑器及语法高亮
+	/////////////////////////////////////////////////
+	var txt = $("#txt"),
+		editor;
+	set_tab_indent_for_textareas(txt);//tab 缩进及自动缩进
+	$("#highlight").click(function(){
+		if($(this).attr('checked')){
+			$("#editor_lang").show();
+			editor = CodeMirror.fromTextArea(txt[0], {
+				lineNumbers: true,
+				indentUnit:4,
+				mode:'javascript',
+				matchBrackets:true,
+				tabMode:"shift",
+				onCursorActivity: function() {
+					editor.setLineClass(hlLine, null);
+					hlLine = editor.setLineClass(editor.getCursor().line, "activeline");
+				},
+				onKeyEvent: function(i, e) {
+					// Hook into F11,ESC
+					if ((e.keyCode == 122 || e.keyCode == 27) && e.type == 'keydown') {
+						e.stop();
+						return toggleFullscreenEditing();
+					}
+				}
+			});
+			var hlLine = editor.setLineClass(0, "activeline");
+			var toggleFullscreenEditing = function (){
+				var editorDiv = $('.CodeMirror-scroll');
+				if (!editorDiv.hasClass('fullscreen')) {
+					toggleFullscreenEditing.beforeFullscreen = { height: editorDiv.height(), width: editorDiv.width() }
+					editorDiv.addClass('fullscreen');
+					editorDiv.height('100%');
+					editorDiv.width('100%');
+					editor.refresh();
+				}
+				else {
+					editorDiv.removeClass('fullscreen');
+					editorDiv.height(toggleFullscreenEditing.beforeFullscreen.height);
+					editorDiv.width(toggleFullscreenEditing.beforeFullscreen.width);
+					editor.refresh();
+				}
+			}
+		}else{
+			$("#editor_lang").hide();
+			editor.toTextArea();
+		}
+	});
+	
+	$("#editor_lang").change(function(){
+		editor.setOption("mode", $(this).val());
+	}).blur(function(){
+		$(this).change();
+	});
+	
+	var get_txt = function(regular){
+		if(!$("#highlight").attr('checked')){
+			return txt.val();
+		}
+		if(editor.somethingSelected() && !regular){
+			return editor.getSelection();
+		}
+		return editor.getValue();
+	};
+	var set_txt = function(str,regular){
+		if(!$("#highlight").attr('checked')){
+			return txt.val(str);
+		}
+		if(editor.somethingSelected() && !regular){
+			return editor.replaceSelection(str);
+		}
+		return editor.setValue(str);
+	};
+	var console = {};
+	console.log = function(str){
+		$("#console").val(str);
+	};
+	/////////////////////////////////////////////////
+	////查找替换
+	/////////////////////////////////////////////////
+	var lastPos,lastQuery;
+	$("#btn_search").click(function(){
+		var search_txt = $("#search_txt").val();
+		if($("#highlight").attr('checked')){
+			if(lastQuery != search_txt) lastPos = null;
+			var cursor = editor.getSearchCursor(search_txt, lastPos || editor.getCursor());
+			if (!cursor.findNext()) {
+				cursor = editor.getSearchCursor(search_txt);
+				if (!cursor.findNext()) return;
+			}
+			editor.setSelection(cursor.from(), cursor.to());
+			lastQuery = search_txt;
+			lastPos = cursor.to();
+		}else{
+			var str = get_txt();
+			var start = str.indexOf(search_txt, lastPos);
+			var len = search_txt.length;
+			var end = start + len;
+			lastPos = end;
+			
+			if(txt[0].createTextRange){//IE 浏览器
+				var range = txt[0].createTextRange();
+				range.moveEnd("character",end-str.length);
+				range.moveStart("character",start);
+				range.select();
+			}else{//非 IE 浏览器
+				txt[0].setSelectionRange(start, end);
+				txt[0].focus();
+			}
+		}
+	});
+	
+	$("#btn_replace").click(function(){
+		var search_txt = $("#search_txt").val();
+		var replace_txt = $("#replace_txt").val();
+		
+		if($("#highlight").attr('checked')){
+			for(var cursor = editor.getSearchCursor(search_txt); cursor.findNext();){
+				cursor.replace(replace_txt);
+			}
+		}else{
+			var txt = get_txt();
+			var re = new RegExp(search_txt,"gi");
+			ret_txt = txt.replace(re,replace_txt);
+			set_txt(ret_txt);
+		}
+	});
+	/////////////////////////////////////////////////
+	////编辑器 tab
+	/////////////////////////////////////////////////
+	(function(){
+		var tab_num = 20,
+			html = '';
+		for(i=0;i<tab_num;i++){
+			html += '<button idx="'+i+'" class="btn_tab" id="tab_'+i+'">'+i+'</button>';
+		}
+		$("#tabs").html(html);
+		var history = new Array(tab_num);
+		var current = 0;
+		$("#tab_"+current).addClass("current");
+		
+		$(".btn_tab").click(function(){
+			var idx = $(this).attr("idx");
+			if(current==idx) return;
+			//保存旧 tab
+			history[current] = get_txt(true);
+			$("#tab_"+current).removeClass("current");
+			if(history[current]){
+				$("#tab_"+current).addClass("filled")
+					.attr('title',(history[current]).substr(0,300));
+			}else{
+				$("#tab_"+current).addClass("empty")
+					.attr('title','');
+			}
+			//设置新 tab
+			var history_txt = history[idx] ? history[idx] : "";
+			set_txt(history_txt, true);
+			current = idx;
+			$("#tab_"+current).removeClass("filled")
+				.removeClass("empty")
+				.addClass("current");
+		});
+		
+	})();
+
+	/////////////////////////////////////////////////
+	////2、8、10、16 进制编码
+	/////////////////////////////////////////////////
+	var arr_format_list = {
+		16:{
+			1601:{demo:'&#x65;&#x65;', start:'&#x', end:';'},
+			1602:{demo:'\\u65\\u65', start:'\\u', end:''},
+			1603:{demo:'\\65\\65', start:'\\', end:''},
+			1604:{demo:'\\x65\\x65', start:'\\x', end:''},
+			1605:{demo:'65 65', start:'', end:' '},
+			1606:{demo:'%65%65', start:'%', end:''},
+			1607:{demo:'6565', start:'', end:''}},
+		10:{
+			1001:{demo:'&#65;&#65;', start:'&#', end:';'},
+			1002:{demo:'&#65&#65', start:'&#', end:''},
+			1003:{demo:'65,65,', start:'', end:','},
+			1004:{demo:'65 65', start:'', end:' '},
+			1005:{demo:'6565', start:'', end:''}},
+		8:{
+			801:{demo:'65 65', start:'', end:' '},
+			802:{demo:'\\65\\65', start:'\\', end:''},
+			803:{demo:'6565', start:'', end:''}},
+		2:{
+			201:{demo:'1010 1010', start:'', end:' '},
+			202:{demo:'10101010', start:'', end:''}}
+	};
+	
+	$("#code_jinzhi").change(function(){
+		var jinzhi = $(this).val();
+		var html = "";
+		for(i in arr_format_list[jinzhi]){
+			html += '<option value="'+i+'">'+EA.code.htmlencode(arr_format_list[jinzhi][i].demo)+'</option>';
+		}
+		$("#code_format").html(html);
+	}).blur(function(){
+		$(this).change();
+	}).change();
+	
+	//编码
+	var system_code = function(type){
+		var format = $("#code_format").val();
+		if(!format){
+			alert("Please select format.");return null;
+		}
+		var jinzhi = $("#code_jinzhi").val();
+		var digit = $("#code_digit").val();
+		var left = arr_format_list[jinzhi][format].start;
+		var right = arr_format_list[jinzhi][format].end;
+		
+		var txt = get_txt();
+		if(txt==""){
+			alert("text empty");return;
+		}
+		var ret_txt = "";
+		if(type=="encode"){
+			ret_txt = EA.code.encode(txt,jinzhi,left,right,digit);
+		}else if(type=="decode"){
+			var for_split = "";
+			var for_replace = "";
+			if(right!=""){
+				for_split = right;
+				for_replace = left;
+			}else if(left!=""){
+				for_split = left;
+				for_replace = right;
+			}else{
+				alert("can decode for this format yet");return;
+			}
+			ret_txt = EA.code.decode(txt,jinzhi,for_split,for_replace);
+		}
+		if(ret_txt==""){
+			alert("operation return empty");
+			return;
+		}
+		set_txt(ret_txt);
+	}
+	
+	$("#btn_encode").click(function(){
+		system_code("encode");
+	});
+	
+	$("#btn_decode").click(function(){
+		system_code("decode");
+	});
+	/////////////////////////////////////////////////
+	////常用功能列表
+	/////////////////////////////////////////////////
+	var add_cmd = function(title,value,color){
+		$("#common_op").append('<option style="color:'+color+'" value="'+value+'">'+title+'</option>');
+	}
+	
+	$("#common_op").dblclick(function(){
+		$("#btn_common_op").click();
+	});
+	
+	$("#btn_common_op").click(function(){
+		var func = $("#common_op").val();
+		if(!func){
+			alert("Please select on operation");
+			return
+		}
+		var txt = get_txt();
+		var ret_txt = eval(func+"(txt)");
+		if(ret_txt==""){
+			alert("operation return empty");
+			return;
+		}
+		set_txt(ret_txt);
+	});
+	
+	//$("#op_type")
+	
+	
+	add_cmd("HTML Encode",'EA.code.htmlencode','red');
+	add_cmd("HTML Decode",'EA.code.htmldecode','red');
+	add_cmd("String Upper",'EA.string.upper','blue');
+	add_cmd("String Lower",'EA.string.lower','blue');
+	add_cmd("Full-Width",'EA.string.quanjiao','green');
+	add_cmd("Half-Width",'EA.string.banjiao','green');
+	
+	
+	add_cmd("Add Slashes",'EA.string.addslashes','blue');
+	add_cmd("Strip Slashes",'EA.string.stripslashes','blue');
+	
+	add_cmd("Remove CRLF",'EA.string.noenter','red');
+	add_cmd("Remove Whitespace",'EA.string.nospace','red');
+	
+	add_cmd("Simple Escape",'escape','blue');
+	add_cmd("Extreme Escape",'EA.encrypt.exescape','blue');
+	add_cmd("Unescape",'unescape','blue');
+	
+	add_cmd("EncodeURI",'encodeURI','green');
+	add_cmd("DecodeURI",'decodeURI','green');
+	add_cmd("encodeURIComponent",'encodeURIComponent','red');
+	add_cmd("decodeURIComponent",'decodeURIComponent','red');
+	
+	add_cmd("UTF7 Encode","EA.encrypt.utf7_encode",'blue');
+	add_cmd("UTF7 Decode","EA.encrypt.utf7_decode",'blue');
+	
+	add_cmd("MD5 HASH","EA.hash.md5",'green');
+	add_cmd("SHA1 HASH","EA.hash.sha1",'green');
+	
+	add_cmd("Base64 Encode","EA.encrypt.base64_encode",'red');
+	add_cmd("Base64 Decode","EA.encrypt.base64_decode",'red');
+	
+	add_cmd("JJEncode","EA.encrypt.jjencode",'blue');
+	add_cmd("JJDecode","EA.encrypt.jjdecode",'blue');
+	
+	
+	
+	////////////////////////////////////////////////
+	////Unicode 码表
+	////////////////////////////////////////////////
+	(function(){
+		var html = '<option value="0">UniCode Table(&amp;#10;&amp;#x16;)</option>';
+		var n = 1000;
+		for(var i=0;i<(65535/n);i++){
+			name = "U + " + (i*n).toString(16) + " -- U + " + ((i+1)*n).toString(16);
+			html += '<option value="'+i+'">'+name+'</option>';
+		}
+		$("#unicode").html(html);
+		
+		$("#unicode").change(function(){
+			var num = $("#unicode").val();
+			var str = "";
+			for(var i=num*n;i<num*n+n;i++){
+				str += "&#" + i + ";";
+			}
+			$("#shade_div").html(str);
+			set_txt($("#shade_div").html());
+		}).blur(function(){
+			$(this).change();
+		});
+	})();
+	////////////////////////////////////////////////
+	////代码运行相关
+	////////////////////////////////////////////////
+	var shade_div = function(html){
+		html += '<div style="text-align:center"><button id="shade_close" onclick=\'$("#shade_div").html("").hide("fast");\'>Close</button></div>';
+		$("#shade_div").html(html).show("fast");
+	};
+	
+	var get_shade_height = function(){
+		return document.documentElement.clientHeight-65;
+	}
+	
+	var shade_frame = function(link,str){
+		html = "<iframe name='shade_iframe' id='shade_iframe' src='"+link+"' height='"+get_shade_height()+"px' width='100%' frameborder='0'></iframe>";
+		shade_div(html);
+		setTimeout(function(){
+			$("#shade_iframe").contents().find("body").append(str);
+		},500);
+	}
+	
+	var run_code = function(){
+		var txt = get_txt(true);
+		//shade_frame('about:blank', txt);
+    	var win = window.open('','_blank','');
+    	win.document.open('text/html','replace');
+    	win.document.writeln(txt);
+    	win.document.close();
+	};
+	$("#run_code").click(function(){
+		run_code();
+	});
+	
+});
+</script>
+</head>
+<body>
+	<div class="container_16">
+		<div class="grid_12">
+			<div id="tabs"></div>
+			<div>
+				<textarea id="txt"></textarea>
+			</div>
+			<div id="cmd_div">
+				<input type="checkbox" id="highlight" />
+				<label for="highlight">Highlight</label>
+				<select id="editor_lang" style="display:none">
+					<option value="javascript">Javascript</option>
+					<option value="xml">XML/HTML</option>
+					<option value="css">CSS</option>
+					<option value="text/html">HTML mixed</option>
+					<option value="python">Python</option>
+					<option value="application/x-httpd-php">PHP</option>
+				</select>
+				<button id="run_code">Run</button>
+				
+				<button id="btn_search">Search</button>
+				<input type="text" id="search_txt" />
+				<input type="text" id="replace_txt" />
+				<button id="btn_replace">Repalce</button>
+			</div>
+			<div id="console">
+				<textarea id="console"></textarea>
+			</div>
+		</div>
+		<div class="grid_4">
+			<div>
+				<select id="unicode"></select>
+			</div>
+			<!--<div>
+				<select id="op_type"></select>
+			</div>-->
+			<div>
+				<select id="common_op" size="21"></select>
+			</div>
+			<div>
+				<button id="btn_common_op">Execute</button>
+			</div>
+			<div>
+				<select id="code_jinzhi">
+					<option value="16">Hex</option>
+					<option value="10">Dec</option>
+					<option value="8">Oct</option>
+					<option value="2">Bin</option>
+				</select>
+				<select id="code_digit">
+					<option value="1">Digit</option>
+					<option value="2">2</option>
+					<option value="3">3</option>
+					<option value="4">4</option>
+					<option value="5">5</option>
+					<option value="6">6</option>
+					<option value="7">7</option>
+					<option value="8">8</option>
+					<option value="9">9</option>
+					<option value="10">10</option>
+				</select>
+			</div>
+			<div>
+				<select id="code_format" size="7"></select>
+			</div>
+			<div>
+				<button id="btn_encode">Encode</button>
+				<button id="btn_decode">Decode</button>
+			</div>
+		</div>
+		<div class="clear"></div>
+		
+	</div>
+	<div id="shade_div"><!--用于限制一些临时代码--></div>
+</body>
+</html>
