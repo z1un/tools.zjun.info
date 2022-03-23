@@ -22,6 +22,8 @@ Idea 来源于 [SecSummers](https://twitter.com/SecSummers)，在线工具均来
 
 [reverse-shell-generator - 功能强大的反弹 Shell 生成器](https://github.com/0dayCTF/reverse-shell-generator)
 
+[curlconverter - 将 curl 命令转换为其他语言代码](https://github.com/curlconverter/curlconverter/)
+
 ## 本项目在线访问
 
 <https://tools.zjun.info>
