@@ -8,8 +8,18 @@
 }
 body {
     font-family:'Rubik';
-    padding:5vh 10vw;
-    margin-bottom:60px
+    padding:6vh 10vw;
+    margin-bottom:32em
+}
+#box {
+    width:55em;
+    height:auto
+}
+.left-box {
+    float:left
+}
+.right-box {
+    float:right
 }
 @media(prefers-color-scheme:dark) {
     body {
@@ -31,7 +41,18 @@ body {
 }
 @media(max-width:64em) {
     body {
-        font-size:.65em
+        font-size:.8em;
+        margin-bottom:4em
+    }
+    #box {
+        width:26em;
+        height:auto
+    }
+    .left-box {
+        float:none
+    }
+    .right-box {
+        float:none
     }
 }
 html {
@@ -39,19 +60,18 @@ html {
     min-height:100%
 }
 h1 {
-    font-size:4.5em;
+    font-size:2em;
     font-weight:500;
+    line-height:2.2;
     margin-bottom:0
 }
-h2{
-    font-weight:500;
-    font-size:2.2em
+h2 {
+    font-size:1.2em;
+    font-weight:400;
+    line-height:1.8
 }
 p {
-    font-size:1.4em;
-    font-weight:300;
-    line-height:1.4;
-    max-width:36em
+    font-weight:300
 }
 a {
     text-decoration:none;
@@ -74,5 +94,5 @@ a:hover:after {
 footer {
     position:absolute;
     bottom:0;
-    height:60px
+    height:4em
 }
