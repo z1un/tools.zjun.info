@@ -1,0 +1,78 @@
+@font-face {
+    font-family: 'Rubik';
+    src: url('/fonts/Rubik-VariableFont_wght.woff2') format('woff2-variations'), 
+         url('/fonts/Rubik-VariableFont_wght.woff2') format('woff2');
+    font-weight: 200 900;
+    font-style: normal;
+    font-display: swap;
+}
+body {
+    font-family:'Rubik';
+    padding:5vh 10vw;
+    margin-bottom:60px
+}
+@media(prefers-color-scheme:dark) {
+    body {
+        background:hsl(231, 14%, 10%);
+        color:hsl(69, 9%, 84%)
+    }
+    a {
+        color:hsl(69, 9%, 84%)
+    }
+}
+@media(prefers-color-scheme:light) {
+    body {
+        background:hsl(0, 0%, 100%);
+        color:hsl(0, 0%, 0%)
+    }
+    a {
+        color:hsl(0, 0%, 0%)
+    }
+}
+@media(max-width:64em) {
+    body {
+        font-size:.65em
+    }
+}
+html {
+    position:relative;
+    min-height:100%
+}
+h1 {
+    font-size:4.5em;
+    font-weight:500;
+    margin-bottom:0
+}
+h2{
+    font-weight:500;
+    font-size:2.2em
+}
+p {
+    font-size:1.4em;
+    font-weight:300;
+    line-height:1.4;
+    max-width:36em
+}
+a {
+    text-decoration:none;
+    position:relative
+}
+a:after {
+    content:'';
+    position:absolute;
+    z-index:-1;
+    top:90%;
+    left:-.1em;
+    right:-.1em;
+    bottom:0;
+    transition:top .2s cubic-bezier(0, .8, .13, 1);
+    background-color:rgba(79, 192, 141, .5)
+}
+a:hover:after {
+    top:0
+}
+footer {
+    position:absolute;
+    bottom:0;
+    height:60px
+}
