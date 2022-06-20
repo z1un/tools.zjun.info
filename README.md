@@ -24,6 +24,8 @@ Idea 来源于 [SecSummers](https://twitter.com/SecSummers)，在线工具均来
 
 [curlconverter - 将 curl 命令转换为其他语言代码](https://github.com/curlconverter/curlconverter/)
 
+[runtime-exec-payloads - 解决执行 java.lang.Runtime.exec() 命令时特殊字符问题](https://www.bugku.net/runtime-exec-payloads/)
+
 ## 本项目在线访问
 
 <https://tools.zjun.info>
